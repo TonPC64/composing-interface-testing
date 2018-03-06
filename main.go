@@ -8,7 +8,7 @@ import (
 )
 
 type constructureFunctions struct {
-	GetValue func() int
+	GetValue func(api string) int
 }
 
 type API struct {
@@ -22,28 +22,28 @@ func NewAPI(functions constructureFunctions) *API {
 	return intFunc
 }
 
-func GetValue() int {
-	res, err := http.Get("https://api.myjson.com/bins/8hykh")
+func GetValue(api string) int {
+	res, err := http.Get(api)
 	if err != nil {
 		log.Println(err)
+	} else {
+		data, _ := ioutil.ReadAll(res.Body)
+		var value map[string]int
+		json.Unmarshal(data, &value)
+		return value["value"]
 	}
-	data, _ := ioutil.ReadAll(res.Body)
-	var value struct {
-		Value int
-	}
-	json.Unmarshal(data, &value)
-	return value.Value
+	return 0
 }
 
 func main() {
 	cf := constructureFunctions{
 		GetValue: GetValue,
 	}
-	useApi(cf)
+	log.Println(useApi(cf))
 }
 
 func useApi(cf constructureFunctions) int {
 	aaa := NewAPI(cf)
-	val := aaa.GetValue()
+	val := aaa.GetValue("https://api.myjson.com/bins/8hykh")
 	return val
 }
